@@ -36,56 +36,146 @@ from sklearn.ensemble import ExtraTreesRegressor
 # Solution 3 : pre-labelling our 10 microstructure with defined labels
 # (these 3 micros are bad HE, these 3 micros are good HE, etc).
 # The problem with solution 3 is that you need to manually clearly define these labels and classify the micros
-c2scale = np.loadtxt('c2scale.txt')[:, 1]
-c2scale = c2scale.reshape(1,-1)
-c09 = np.loadtxt('c09.txt')[:, 1]
-c09 = c09.reshape(1,-1)
-c20 = np.loadtxt('c20.txt')[:, 1]
-c20 = c20.reshape(1,-1)
-crat = np.loadtxt('c_ratio.txt')[:, 1]
-crat = crat.reshape(1,-1)
-cvary = np.loadtxt('c_spherevary.txt')[:, 1]
-cvary = cvary.reshape(1,-1)
-cgg = np.loadtxt('cgg.txt')[:, 1]
-cgg = cgg.reshape(1,-1)
-cirreg = np.loadtxt('cirreg.txt')[:, 1]  #Shape (261,)
-cirreg = cirreg.reshape(-1,1)            #Data that needs to be imputed has different reshape
-cn63 = np.loadtxt('cn63.txt')[:, 1]      #Shape (264,)
-cn63 = cn63.reshape(-1,1)                #Data that needs to be imputed has different reshape
-cparacol = np.loadtxt('cparacol.txt')[:, 1] #Has nan
-cparacol = cparacol.reshape(-1,1)        #Data that needs to be imputed has different reshape
-cvoro = np.loadtxt('cvronoi.txt')[:, 1]
-cvoro = cvoro.reshape(1,-1)
-cZcom = np.loadtxt('cZcolumnar.txt')[:, 1] #Has nan
-cZcom = cZcom.reshape(-1, 1)               #Data that needs to be imputed has different reshape
+ct2scale = np.loadtxt('ct2scale.txt')[:, 1]
+ct2scale = ct2scale.reshape(1,-1)
+cl2scale = np.loadtxt('cl2scale.txt')[:, 1]
+cl2scale = cl2scale.reshape(1,-1)
+vol2scale = np.loadtxt('vol2scale.txt')[:, 1]
+vol2scale = vol2scale.reshape(1,-1)
+
+ct09 = np.loadtxt('ct09.txt')[:, 1]
+ct09 = ct09.reshape(1,-1)
+cl09 = np.loadtxt('cl09.txt')[:, 1]
+cl09 = cl09.reshape(1,-1)
+vol09 = np.loadtxt('vol09.txt')[:, 1]
+vol09 = vol2scale.reshape(1,-1)
+
+ct20 = np.loadtxt('ct20.txt')[:, 1]
+ct20 = ct20.reshape(1,-1)
+cl20 = np.loadtxt('cl20.txt')[:, 1]
+cl20 = cl20.reshape(1,-1)
+vol20 = np.loadtxt('vol20.txt')[:, 1]
+vol20 = vol20.reshape(1,-1)
+
+ctrat = np.loadtxt('ct_ratio.txt')[:, 1]
+ctrat = ctrat.reshape(1,-1)
+clrat = np.loadtxt('cl_ratio.txt')[:, 1]
+clrat = clrat.reshape(1,-1)
+volrat = np.loadtxt('vol_ratio.txt')[:, 1]
+volrat = volrat.reshape(1,-1)
+
+ctvary = np.loadtxt('ct_spherevary.txt')[:, 1]
+ctvary = ctvary.reshape(1,-1)
+clvary = np.loadtxt('cl_spherevary.txt')[:, 1]
+clvary = clvary.reshape(1,-1)
+volvary = np.loadtxt('vol_vary.txt')[:, 1]
+volvary = volvary.reshape(1,-1)
+
+ctgg = np.loadtxt('ctgg.txt')[:, 1]
+ctgg = ctgg.reshape(1,-1)
+clgg = np.loadtxt('clgg.txt')[:, 1]
+clgg = clgg.reshape(1,-1)
+volgg = np.loadtxt('volgg.txt')[:, 1]
+volgg = volgg.reshape(1,-1)
+
+ctirreg = np.loadtxt('ctirreg.txt')[:, 1]  #Shape (261,)
+ctirreg = ctirreg.reshape(-1,1)            #Data that needs to be imputed has different reshape
+clirreg = np.loadtxt('clirreg.txt')[:, 1]  #Shape (261,)
+clirreg = clirreg.reshape(-1,1)
+volirreg = np.loadtxt('volirreg.txt')[:, 1]  #Shape (261,)
+volirreg = volirreg.reshape(-1,1)
+
+ctn63 = np.loadtxt('ct63lam.txt')[:, 1]      #Shape (264,)
+ctn63 = ctn63.reshape(-1,1)                #Data that needs to be imputed has different reshape
+cln63 = np.loadtxt('cl63lam.txt')[:, 1]      #Shape (264,)
+cln63 = cln63.reshape(-1,1)                #Data that needs to be imputed has different reshape
+vol63 = np.loadtxt('vol63lam.txt')[:, 1]      #Shape (264,)
+vol63 = vol63.reshape(-1,1)                #Data that needs to be imputed has different reshape
+
+ctparacol = np.loadtxt('ctparacol.txt')[:, 1] #Has nan
+ctparacol = ctparacol.reshape(-1,1)        #Data that needs to be imputed has different reshape
+clparacol = np.loadtxt('clparacol.txt')[:, 1] #Has nan
+clparacol = clparacol.reshape(-1,1)        #Data that needs to be imputed has different reshape
+volparacol = np.loadtxt('volparacolumn.txt')[:, 1] #Has nan
+volparacol = volparacol.reshape(-1,1)        #Data that needs to be imputed has different reshape
+
+ctvoro = np.loadtxt('ctvoro.txt')[:, 1]
+ctvoro = ctvoro.reshape(1,-1)
+clvoro = np.loadtxt('clvoro.txt')[:, 1]
+clvoro = clvoro.reshape(1,-1)
+volvoro = np.loadtxt('volvoro.txt')[:, 1]
+volvoro = volvoro.reshape(1,-1)
+
+ctZcom = np.loadtxt('ctZcolumn.txt')[:, 1] #Has nan
+ctZcom = ctZcom.reshape(-1, 1)               #Data that needs to be imputed has different reshape
+clZcom = np.loadtxt('clZcolumn.txt')[:, 1] #Has nan
+clZcom = clZcom.reshape(-1, 1)               #Data that needs to be imputed has different reshape
+volZcom = np.loadtxt('volZcolumn.txt')[:, 1] #Has nan
+volZcom = volZcom.reshape(-1, 1)               #Data that needs to be imputed has different reshape
 
 ################ Dealing with NaN value ####################
-cirregnan = np.argwhere(np.isnan(cirreg))[:,0]
-cn63nan = np.argwhere(np.isnan(cn63))[:,0]
-cZcomnan = np.argwhere(np.isnan(cZcom))[:,0]
-cparacolnan = np.argwhere(np.isnan(cparacol))[:,0]
+ctirregnan = np.argwhere(np.isnan(ctirreg))[:,0]
+clirregnan = np.argwhere(np.isnan(clirreg))[:,0]
+
+ct63nan = np.argwhere(np.isnan(ctn63))[:,0]
+cl63nan = np.argwhere(np.isnan(cln63))[:,0]
+
+ctZcomnan = np.argwhere(np.isnan(ctZcom))[:,0]
+clZcomnan = np.argwhere(np.isnan(clZcom))[:,0]
+
+ctparacolnan = np.argwhere(np.isnan(ctparacol))[:,0]
+clparacolnan = np.argwhere(np.isnan(clparacol))[:,0]
 
 # Defining imputer model
 imp_tree = IterativeImputer(random_state=0, missing_values= np.nan,
                             estimator=ExtraTreesRegressor(max_features="sqrt", random_state=0))
-cirreg = imp_tree.fit_transform(cirreg)
-cn63 = imp_tree.fit_transform(cn63)
-cZcom = imp_tree.fit_transform(cZcom)
-cparacol = imp_tree.fit_transform(cparacol)
+ctirreg = imp_tree.fit_transform(ctirreg)
+clirreg = imp_tree.fit_transform(clirreg)
 
-cn63drop = [cn63nan[1],cn63nan[2], cn63nan[3], cn63nan[4]]
-cirregdrop = [cirregnan[1]]
+ctn63 = imp_tree.fit_transform(ctn63)
+cln63 = imp_tree.fit_transform(cln63)
 
-cirreg = np.delete(cirreg, cirregdrop)
-cn63 = np.delete(cn63, cn63drop)
-#Reshape the imputed data back to the correct shape for grain = feature
-cirreg = cirreg.reshape(1,-1)
-cn63 = cn63.reshape(1,-1)
-cZcom = cZcom.reshape(1,-1)
-cparacol = cparacol.reshape(1,-1) #test
+ctZcom = imp_tree.fit_transform(ctZcom)
+clZcom = imp_tree.fit_transform(clZcom)
 
+ctparacol = imp_tree.fit_transform(ctparacol)
+clparacol = imp_tree.fit_transform(clparacol)
 
-# region Description:  Block to check imputed values (default commented out)
+# Dropping excess samples
+ctn63drop = [ct63nan[1],ct63nan[2], ct63nan[3], ct63nan[4]]
+cln63drop = [cl63nan[1],cl63nan[2], cl63nan[3], cl63nan[4]]
+voln63drop = [cl63nan[1],cl63nan[2], cl63nan[3], cl63nan[4]]
+
+ctirregdrop = [ctirregnan[1]]
+clirregdrop = [clirregnan[1]]
+volirregdrop = [clirregnan[1]]
+
+ctirreg = np.delete(ctirreg, ctirregdrop)
+clirreg = np.delete(clirreg, clirregdrop)
+volirreg = np.delete(volirreg, volirregdrop)
+
+ctn63 = np.delete(ctn63, ctn63drop)
+cln63 = np.delete(cln63, cln63drop)
+vol63 = np.delete(vol63, voln63drop)
+
+#Reshape the imputed data back to the correct shape for grain = sample
+ctirreg = ctirreg.reshape(1,-1)
+clirreg = clirreg.reshape(1,-1)
+volirreg = volirreg.reshape(1,-1)
+
+ctn63 = ctn63.reshape(1,-1)
+cln63 = cln63.reshape(1,-1)
+vol63 = vol63.reshape(1,-1)
+
+ctZcom = ctZcom.reshape(1,-1)
+clZcom = clZcom.reshape(1,-1)
+volZcom = volZcom.reshape(1,-1)
+
+ctparacol = ctparacol.reshape(1,-1) #test
+clparacol = clparacol.reshape(1,-1) #test
+volparacol = volparacol.reshape(1,-1) #test
+
+#Block to check imputed value. Default commented out
 #a = []
 #b = []
 #c = []
@@ -103,11 +193,14 @@ cparacol = cparacol.reshape(1,-1) #test
 #print(c)
 #print(d)
 
-#region end
 
-####### Creating training data #######
-arrays = [c2scale, c20, cirreg, cZcom, c09, cn63, cgg, cvoro, crat, cvary, cparacol]
-alldata = np.concatenate([c2scale.T, c20.T, cirreg.T, cZcom.T, c09.T, cn63.T, cgg.T, cvoro.T, crat.T, cvary.T])
+####### Creating training and test data #######
+#arrays = [c2scale, c20, cirreg, cZcom, c09, cn63, cgg, cvoro, crat, cvary, cparacol]
+allct = np.concatenate([ct2scale.T, ct20.T, ctirreg.T, ctZcom.T, ct09.T, ctn63.T, ctgg.T, ctvoro.T, ctrat.T,ctvary.T])
+allcl = np.concatenate([cl2scale.T, cl20.T, clirreg.T, clZcom.T, cl09.T, cln63.T, clgg.T, clvoro.T, clrat.T,clvary.T])
+allvol = np.concatenate([vol2scale.T, vol20.T, volirreg.T, volZcom.T, vol09.T, vol63.T, volgg.T, volvoro.T, volrat.T,volvary.T])
+alldata = np.concatenate([allct,allcl, allvol], axis = 1)
+
 df = pd.DataFrame(data = alldata)
 structures = ['2scale', 'sphere20', 'irregular laminar', 'columnar Z', 'equiaxed',
          'lamellar', 'graingrowth', 'voronoi', 'aspect ratio', 'varying spherecity']
@@ -115,6 +208,9 @@ y_train = []
 for label in structures:
      for i in range(1,261):
          y_train.append(label)
+
+test = np.concatenate([ctparacol.T, clparacol.T, volparacol.T], axis = 1)
+
 
 ################ Model Evaluation ##############################
 # get a list of models to evaluate
@@ -157,7 +253,7 @@ plt.show()
 log_reg = LogisticRegression(solver='lbfgs', multi_class='multinomial')
 log_reg.fit(df, y_train)
 
-label_pred = log_reg.predict(cparacol.T)
+label_pred = log_reg.predict(test)
 
 unique, counts = np.unique(label_pred, return_counts=True)
 
