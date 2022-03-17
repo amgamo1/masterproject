@@ -1,0 +1,3 @@
+This folder contains microstructure data extracted using neper. 
+Each column  is respectively, from left to right:  surface area, volume , equivalent diameter, number of faces, edges and vertices
+Each row is a grain in the microstructure (from grain 1 to 260 , 261 or 264 depending on some structures)
