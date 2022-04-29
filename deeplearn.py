@@ -22,7 +22,7 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.ensemble import ExtraTreesRegressor
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import tensorflow as tf
 
 ########### Load and shape data ##################
@@ -167,7 +167,7 @@ clZcom = clZcom.reshape(1,-1)
 
 ctparacol = ctparacol.reshape(1,-1) #test
 clparacol = clparacol.reshape(1,-1) #test
-volparacol = volparacol.reshape(1,-1) #test
+#volparacol = volparacol.reshape(1,-1) #test
 
 
 allct = np.concatenate([ct2scale.T, ct20.T, ctirreg.T, ctZcom.T, ct09.T, ctn63.T, ctgg.T, ctvoro.T, ctrat.T,ctvary.T])
@@ -212,8 +212,8 @@ def get_model(n_inputs, n_outputs):
     model.add(Dense(n_outputs, kernel_initializer='he_uniform', activation='sigmoid'))
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
         initial_learning_rate=0.001,
-        decay_steps=10,
-        decay_rate=0.9)
+        decay_steps=100,
+        decay_rate=0.2)
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
     model.compile(#loss = tf.keras.losses.MeanAbsolutePercentageError(),
                   loss = 'mse',
@@ -244,12 +244,30 @@ def evaluate_model(X, y):
 	return results
 
 #Train test split
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, Y_scaled, test_size=0.2, random_state=20)
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, Y_scaled, test_size=0.2)
 model = get_model(X.shape[1],Y_scaled.shape[1])
 history = model.fit(X_train, y_train,
                     validation_data= (X_test, y_test),
-                    epochs = 50)
+                    epochs = 50,
+                    batch_size = 8,
+                    shuffle = True)
 
+#Predictions and MAPE error
+prediction = model.predict(X_test)
+prediction_unscaled = scaling_output.inverse_transform(prediction)
+y_test = scaling_output.inverse_transform(y_test)
+MAPE_prediction = 100*abs(prediction_unscaled - y_test)/y_test
+predict_unseen = model.predict(test_scaled)
+predict_unseen_unscaled = scaletest_output.inverse_transform(predict_unseen)
+MAPE_unseen = 100*abs(predict_unseen_unscaled - Y_unseen)/Y_unseen
+
+validation_result = np.concatenate([y_test, prediction_unscaled, MAPE_prediction], axis = 1)
+unseen_result = np.concatenate([Y_unseen, predict_unseen_unscaled, MAPE_unseen], axis = 1)
+np.set_printoptions(suppress=True)
+print('*************** Validation set result **********************')
+print(validation_result)
+print('*************** Unseen set result **********************')
+print(unseen_result)
 #results = evaluate_model(X_test, y_test)
 #print('MAE: %.3f (%.3f)' % (mean(results), std(results)))
 
