@@ -192,7 +192,7 @@ test_scaled = scaletest_input.fit_transform(X_unseen)
 
 #Final training frame
 Y_cl = np.concatenate([allcl], axis = 1)
-Y_output = pd.DataFrame(data = Y_cl )
+Y_output = Y_cl
 #Y_scaled = scaling_output.fit_transform(Y_output)
 #print(Y_scaled)
 X = pd.DataFrame(data = allmicro)
@@ -218,65 +218,35 @@ def get_model(n_inputs, n_outputs):
     model.compile(#loss = tf.keras.losses.MeanAbsolutePercentageError(),
                   loss = 'mse',
                   optimizer = 'adam' ,
-                  metrics = ['mae'])
-                  #metrics  = [tf.keras.metrics.MeanAbsolutePercentageError()])
+                  #metrics = ['mae'])
+                  metrics  = [tf.keras.metrics.MeanAbsolutePercentageError()])
     return model
 
-#Train test split
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, Y_output, test_size=0.2)
-model = get_model(X.shape[1],Y_output.shape[1])
-history = model.fit(X_train, y_train,
-                    validation_data= (X_test, y_test),
-                    epochs = 100,
-                    #batch_size = 8,
-                    shuffle = True)
+def evaluate_model(X, y):
+    results = list()
+    n_inputs, n_outputs = X.shape[1], y.shape[1]
+    #define evluation procedure
+    cv = RepeatedKFold(n_splits = 10, n_repeats=3 ,random_state=1)
+    #enumerate folds
+    for train_ix, test_ix in cv.split(X):
+        #Prepare data
+        X_train, X_test = X[train_ix], X[test_ix]
+        y_train, y_test = y[train_ix], y[test_ix]
+        #Build and fit model
+        model = get_model(n_inputs,n_outputs)
+        model.fit(X_train, y_train, verbose = 0, epochs = 100 ,shuffle = True)
+        #print(model.metrics_names)
+        #evluate model
+        mae = model.evaluate(X_test, y_test, verbose = 0)
+        #store results
+        print('%.3f' % mae[1])
+        results.append(mae[1])
+    return results
 
-#Predictions and MAPE error
-prediction = model.predict(X_test)
-#prediction_unscaled = scaling_output.inverse_transform(prediction)
-#y_test = scaling_output.inverse_transform(y_test)
-MAPE_prediction = 100*abs(prediction - y_test)/y_test
-predict_unseen = model.predict(test_scaled)
-#predict_unseen_unscaled = scaletest_output.inverse_transform(predict_unseen)
-MAPE_unseen = 100*abs(predict_unseen - Y_unseen)/Y_unseen
 
 
 
-validation_result = np.concatenate([y_test, prediction, MAPE_prediction], axis = 1)
-unseen_result = np.concatenate([Y_unseen, predict_unseen, MAPE_unseen], axis = 1)
-np.set_printoptions(suppress=True)
-print('*************** Validation set result **********************')
-print(validation_result)
-print('*************** Unseen set result **********************')
-print(unseen_result)
-#results = evaluate_model(X_test, y_test)
-#print('MAE: %.3f (%.3f)' % (mean(results), std(results)))
-
-history_dict = history.history
-loss_values = history_dict['loss']
-val_loss_values = history_dict['val_loss']
-accuracy = history_dict['mae']
-val_accuracy = history_dict['val_mae']
-
-epochs = range(1, len(loss_values) + 1)
-fig, ax = plt.subplots(1, 2, figsize=(14, 6))
-#
-# Plot the model accuracy (MAE) vs Epochs
-#
-ax[0].plot(epochs, accuracy, 'bo', label='Training mape')
-ax[0].plot(epochs, val_accuracy, 'b', label='Validation mape')
-ax[0].set_title('Training & Validation Accuracy', fontsize=16)
-ax[0].set_xlabel('Epochs', fontsize=16)
-ax[0].set_ylabel('Accuracy', fontsize=16)
-ax[0].legend()
-#
-# Plot the loss vs Epochs
-#
-ax[1].plot(epochs, loss_values, 'bo', label='Training loss')
-ax[1].plot(epochs, val_loss_values, 'b', label='Validation loss')
-ax[1].set_title('Training & Validation Loss', fontsize=16)
-ax[1].set_xlabel('Epochs', fontsize=16)
-ax[1].set_ylabel('Loss', fontsize=16)
-ax[1].legend()
-
-plt.show()
+# evaluate model
+results = evaluate_model(X_scaled, Y_output)
+# summarize performance
+print('MAPE: %.3f (%.3f)' % (mean(results), std(results)))
