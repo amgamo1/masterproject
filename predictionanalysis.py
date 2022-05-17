@@ -175,7 +175,6 @@ allct = np.concatenate([ct2scale.T, ct20.T, ctirreg.T, ctZcom.T, ct09.T, ctn63.T
 allcl = np.concatenate([cl2scale.T, cl20.T, clirreg.T, clZcom.T, cl09.T, cln63.T, clgg.T, clvoro.T, clrat.T,clvary.T])
 allmicro = np.concatenate([vol2scale, vol20, volirreg, volZcom, vol09, vol63, volgg, volvoro, volrat,volvary],axis = 0)
 
-print(np.mean(allcl))
 
 #Scaling the data
 scaling_input = MinMaxScaler()
@@ -232,7 +231,7 @@ X_train, X_test, y_train, y_test = train_test_split(X_scaled, Y_output, test_siz
 model = get_model(X.shape[1],Y_output.shape[1])
 history = model.fit(X_train, y_train,
                     validation_data= (X_test, y_test),
-                    epochs = 650,
+                    epochs = 1000,
                     #batch_size = 8,
                     )
 
@@ -267,69 +266,34 @@ axs[1].set_ylabel('Predicted Concentration', fontsize=16)
 plt.show()
 
 
+
 #Targeted - Prediction - MAPE matrix
 validation_result = np.concatenate([y_test, prediction, MAPE_prediction], axis = 1)
+validation_result = pd.DataFrame(data = validation_result)
+validation_result.columns = ['Targeted', 'Prediction', 'MAPE']
 unseen_result = np.concatenate([Y_unseen, predict_unseen, MAPE_unseen], axis = 1)
+unseen_result = pd.DataFrame(data = unseen_result)
+unseen_result.columns = ['Targeted', 'Prediction', 'MAPE']
+
+valmask=validation_result['MAPE']>=10
+highMAPEval = validation_result[valmask]
+
+unseenmask = unseen_result['MAPE']>=10
+highMAPEun = unseen_result[unseenmask]
 np.set_printoptions(suppress=True)
-print('*************** Validation set result **********************')
-print(validation_result)
-print('*************** Unseen set result **********************')
-print(unseen_result)
-#results = evaluate_model(X_test, y_test)
-#print('MAE: %.3f (%.3f)' % (mean(results), std(results)))
-
-
-
-grainprediction = np.arange(len(MAPE_prediction))
-grainunseen = np.arange(len(MAPE_unseen))
-
-
-MAPE_prediction = MAPE_prediction.to_numpy()
-MAPE_prediction = MAPE_prediction.reshape(-1)
-MAPE_unseen = MAPE_unseen.to_numpy()
-MAPE_unseen = MAPE_unseen.reshape(-1)
-barchart, barx = plt.subplots(1,2, figsize = (14,6))
-barx[0].bar(grainprediction, MAPE_prediction, label = 'Validation Set', width=0.2)
-barx[0].set_xlabel('Grain')
-barx[0].set_ylabel('MAPE Error %')
-barx[1].bar(grainunseen, MAPE_unseen, label = 'Unseen Set')
-barx[1].set_xlabel('Grain')
-barx[1].set_ylabel('MAPE Error %')
-barx[0].set_ylim([0, 20])
-barx[1].set_ylim([0, 20])
-barx[0].legend()
-barx[1].legend()
+print(highMAPEval)
+print(highMAPEun)
+ax1 = highMAPEval.plot(kind='scatter', x='MAPE', y='Prediction', color='r', label = 'Prediction')
+ax2 = highMAPEval.plot(kind='scatter', x='MAPE', y='Targeted', color='g', label = 'Targeted' ,ax=ax1)
+plt.legend()
+plt.ylabel('Concentration (ppm)')
+plt.savefig('highMAPEval.png')
 plt.show()
 
-history_dict = history.history
-#print(history_dict.keys())
-loss_values = history_dict['loss']
-val_loss_values = history_dict['val_loss']
-accuracy = history_dict['mean_absolute_percentage_error']
-val_accuracy = history_dict['val_mean_absolute_percentage_error']
-
-epochs = range(1, len(loss_values) + 1)
-# Plot the model accuracy (MAE) vs Epochs
-#
-accuracy[0] = 13.0169
-loss_values[0] = 10.2286
-fig, ax = plt.subplots(1, 2, figsize=(14, 6))
-
-
-ax[0].plot(epochs, accuracy, 'b', label='Validation mape')
-ax[0].plot(epochs, val_accuracy, 'r', label='Training mape')
-ax[0].set_title('Training & Validation Metrics', fontsize=16)
-ax[0].set_xlabel('Epochs', fontsize=16)
-ax[0].set_ylabel('Accuracy', fontsize=16)
-ax[0].legend()
-#
-# Plot the loss vs Epochs
-#
-ax[1].plot(epochs, loss_values, 'b', label='Validation loss')
-ax[1].plot(epochs, val_loss_values, 'r', label='Training loss')
-ax[1].set_title('Training & Validation Loss', fontsize=16)
-ax[1].set_xlabel('Epochs', fontsize=16)
-ax[1].set_ylabel('Loss', fontsize=16)
-ax[1].legend()
-plt.savefig('epochloss.png')
+bx1 = highMAPEun.plot(kind='scatter', x='MAPE', y='Prediction', color='r', label = 'Prediction')
+bx2 = highMAPEun.plot(kind='scatter', x='MAPE', y='Targeted', color='g', label = 'Targeted' ,ax=bx1)
+plt.legend()
+plt.ylabel('concentration (ppm)')
+plt.savefig('highMAPEun.png')
 plt.show()
+

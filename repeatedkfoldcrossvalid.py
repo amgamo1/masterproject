@@ -203,12 +203,15 @@ X_scaled = scaling_input.fit_transform(X)
 #Build the model
 def get_model(n_inputs, n_outputs):
     model = Sequential()
-    model.add(Dense(32, input_dim=n_inputs, kernel_initializer='he_uniform', activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(16, activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dropout(0.2))
+    model.add(Dense(n_inputs, input_dim=n_inputs, kernel_initializer='he_uniform', activation='relu'))
+    model.add(Dense(200, activation = 'relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(140, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(80, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dropout(0.1))
     model.add(Dense(n_outputs, kernel_initializer='he_uniform', activation='relu'))
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
         initial_learning_rate=0.001,
@@ -217,7 +220,7 @@ def get_model(n_inputs, n_outputs):
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
     model.compile(#loss = tf.keras.losses.MeanAbsolutePercentageError(),
                   loss = 'mse',
-                  optimizer = 'adam' ,
+                  optimizer = 'RMSprop' ,
                   #metrics = ['mae'])
                   metrics  = [tf.keras.metrics.MeanAbsolutePercentageError()])
     return model
@@ -226,7 +229,7 @@ def evaluate_model(X, y):
     results = list()
     n_inputs, n_outputs = X.shape[1], y.shape[1]
     #define evluation procedure
-    cv = RepeatedKFold(n_splits = 10, n_repeats=3 ,random_state=1)
+    cv = RepeatedKFold(n_splits = 5, n_repeats=3 ,random_state=1)
     #enumerate folds
     for train_ix, test_ix in cv.split(X):
         #Prepare data
